@@ -85,7 +85,7 @@ def findEdge(Edges, pos):
     pos = SimpleNamespace(x=float(x), y=float(y))
     min = 10000000000
     for e in Edges:
-        #print(graph['Nodes'][e['dest']]['pos'])
+        # print(graph['Nodes'][e['dest']]['pos'])
         delta1 = dist(graph['Nodes'][e['src']]['pos'], graph['Nodes'][e['dest']]['pos'])
         delta2 = dist(graph['Nodes'][e['src']]['pos'], pos) + dist(pos, graph['Nodes'][e['dest']]['pos'])
         delta = ma.fabs(delta1 - delta2)
@@ -95,16 +95,28 @@ def findEdge(Edges, pos):
     return edge
 
 
+info = client.get_info().split(',')
+num_of_agentes = info[8]
+num_of_agentes = num_of_agentes[9:-2]
+print(num_of_agentes)
+num_of_agentes = int(num_of_agentes)
+allocate = []
+
+for i in range(num_of_agentes):
+    q = queue.Queue()
+    tmp = "{\"id\":" + str(i) + "}"
+    client.add_agent(tmp)
+    allocate.append(q)
 radius = 15
 
-client.add_agent("{\"id\":0}")
+
+
 # client.add_agent("{\"id\":1}")
 # client.add_agent("{\"id\":2}")
 # client.add_agent("{\"id\":3}")
 
 # this commnad starts the server - the game is running now
 client.start()
-q = queue.Queue()
 
 """
 The code below should be improved significantly:
@@ -133,7 +145,7 @@ while client.is_running() == 'true':
             exit(0)
 
     # refresh surface
-    screen.fill(Color(0, 0, 0))
+    screen.fill(Color(255, 255, 255))
 
     # draw nodes
     for n in graph['Nodes']:
@@ -169,7 +181,7 @@ while client.is_running() == 'true':
 
     # draw agents
     for agent in agents:
-        pygame.draw.circle(screen, Color(122, 61, 23),
+        pygame.draw.circle(screen, Color(255, 0, 0),
                            (int(agent.pos.x), int(agent.pos.y)), 10)
     # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
     for p in pokemons:
@@ -180,13 +192,13 @@ while client.is_running() == 'true':
     display.update()
 
     # refresh rate
-    clock.tick(60)
+    # clock.tick(60)
 
     g = DiGraph()
     path = client.get_info().split(",")
 
     path = path[7][9:-1]
-    #print(path)
+    # print(path)
     algo = GraphAlgo.GraphAlgo(g)
     algo.load_from_json(path)
     last_agent = 0
@@ -206,37 +218,103 @@ while client.is_running() == 'true':
         else:
             list_edegs.append(e['src'])
     # choose next edge
-    for agent in agents:
-        # find where the agent
-        for n in graph['Nodes']:
-            x, y, z = str(agent.pos).split(',')
-            if float(n['pos'].x) == float(x) and float(n['pos'].y) == float(y):
-                node = n['id']
-        if agent.dest == -1:
-            last_agent = agent.id
-            min_dest = 10000000
+    if len(agents) == 1:
+        for agent in agents:
+            # find where the agent
+            for n in graph['Nodes']:
+                x, y, z = str(agent.pos).split(',')
+                if float(n['pos'].x) == float(x) and float(n['pos'].y) == float(y):
+                    node = n['id']
+            if agent.dest == -1:
+                last_agent = agent.id
+                for p in pokemons:
+                    e = findEdge(graph['Edges'], p['pos'])
+                    if not node == e['src']:
+                        dest = algo.shortest_path(node, e['src'])[1]
+                    else:
+                        dest = algo.shortest_path(node, e['dest'])[1]
+                client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(dest[1]) + '}')
+                ttl = client.time_to_end()
+                print(ttl, client.get_info())
+        clock.tick(11)
+        client.move()
+    else:
+        for p in pokemons:
+            count = 0
+            dest = 0
+            e = findEdge(graph['Edges'], p['pos'])
+            delta = 0
+            min = 10000000
             index = -1
-            print(node)
-            print(list_edegs)
-            for i in list_edegs:
-                if not i == node:
-                    tmp = algo.shortest_path(node, i)[0]
-                    if tmp < min_dest:
-                        min_dest = tmp
-                        index = i
-            print(index, node)
-            tmp_path = algo.shortest_path(node, index)[1]
-
-            # for p in pokemons:
-            #     e = findEdge(graph['Edges'], p['pos'])
-            #     if not node == e['src']:
-            #         dest = algo.shortest_path(node, e['src'])[1]
-            #     else:
-            #         dest = algo.shortest_path(node, e['dest'])[1]
-
-            client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(tmp_path[1]) + '}')
+            for agent in agents:
+                count += 1
+                #print("gets into agents")
+                if agent.dest == -1:
+                    # find where the agent
+                    for n in graph['Nodes']:
+                        #print("gets into graph['Nodes']")
+                        x, y, z = str(agent.pos).split(',')
+                        if float(n['pos'].x) == float(x) and float(n['pos'].y) == float(y):
+                            node = n['id']
+                    #print(e['dest'], e['src'], node)
+                    if p['type'] == 1 and node != e['dest']:
+                        delta, dest = algo.shortest_path(node, e['dest'])
+                        print("1", dest)
+                    else:
+                        delta, dest = algo.shortest_path(node, e['src'])
+                        print("-1", dest)
+                    if delta < min:
+                        min = delta
+                        index = agent.id
+                    for i in dest:
+                        allocate[index].put(i)
+                    #print(allocate[index].get(), node)
+                    if count == num_of_agentes:
+                        client.choose_next_edge(
+                                    '{"agent_id":' + str(index) + ', "next_node_id":' + str(allocate[index].get()) + '}')
             ttl = client.time_to_end()
             print(ttl, client.get_info())
-    clock.tick(10)
-    client.move()
+        clock.tick(11)
+        client.move()
+        # game over:
+
+        # if p['type'] == 1:
+        #     next_node = e['src']
+        # else:
+        #     next_node = e['dest']
+        # print(node, next_node)
+        # if len(pokemons) > 1:
+        #     print(list_edegs)
+        #     node_list = algo.TSP(list_edegs)
+        #     print(node_list)
+        #     if not int(node) == int(node_list[0]):
+        #         dest = algo.shortest_path(node, node_list[0])[1]
+        #     else:
+        #         print(node_list)
+        #         node_list.remove(node_list[0])
+        #         print(node_list)
+        #         dest = algo.shortest_path(node, node_list[0])[1]
+        #         print(dest)
+        # else:
+
 # game over:
+
+
+# if p['type'] == 1:
+#     next_node = e['src']
+# else:
+#     next_node = e['dest']
+# print(node, next_node)
+# if len(pokemons) > 1:
+#     print(list_edegs)
+#     node_list = algo.TSP(list_edegs)
+#     print(node_list)
+#     if not int(node) == int(node_list[0]):
+#         dest = algo.shortest_path(node, node_list[0])[1]
+#     else:
+#         print(node_list)
+#         node_list.remove(node_list[0])
+#         print(node_list)
+#         dest = algo.shortest_path(node, node_list[0])[1]
+#         print(dest)
+# else:
