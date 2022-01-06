@@ -77,6 +77,8 @@ class GraphAlgo(GraphAlgoInterface):
         @return: The distance of the path, a list of the nodes ids that the path goes through
         """
     def shortest_path(self, id1: int, id2: int) -> (float, list):
+        if id1 == id2:
+            return 0, [id1, id2]
         dist, prev = self.dijkstra(id1)
         shortest_path = dist[id2]
         if shortest_path == float('inf'): # it means that you cant reach to id2, then return 'inf', []
@@ -189,6 +191,12 @@ class GraphAlgo(GraphAlgoInterface):
     For more info: https://en.wikipedia.org/wiki/Travelling_salesman_problem
     '''
     def TSP(self, node_lst: List[int]) -> (List[int], float):
+        node_lst.sort()
+        for i in range(len(node_lst)-1):
+            if node_lst[i] == node_lst[i+1]:
+                node_lst.pop(i)
+        if len(node_lst) == 1:
+            return node_lst
         dist = []
         min_dist = float('inf')
         for n in self.get_graph().get_all_v().values():
@@ -212,11 +220,11 @@ class GraphAlgo(GraphAlgoInterface):
             min_dist = float('inf')
             for n in node_lst_copy:
                 last_val = dist[last][n]
-                if (last_val < min_dist and last_val != 0):
+                if (last_val <= min_dist and last_val != 0):
                     min_dist = last_val
                     indx = n
             if min_dist == float('inf'):
-                return []
+                return ans
             node_lst_copy.remove(indx)
             ans.append(indx)
             last = indx
