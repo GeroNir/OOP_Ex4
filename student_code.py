@@ -269,11 +269,14 @@ while client.is_running() == 'true':
                     for i in dest:
                         allocate[index].put(i)
                     #print(allocate[index].get(), node)
-                    if count == num_of_agentes:
-                        client.choose_next_edge(
-                                    '{"agent_id":' + str(index) + ', "next_node_id":' + str(allocate[index].get()) + '}')
-            ttl = client.time_to_end()
-            print(ttl, client.get_info())
+                    #if count == num_of_agentes:
+                        #client.choose_next_edge('{"agent_id":' + str(index) + ', "next_node_id":' + str(allocate[index].get()) + '}')
+        for i in range(num_of_agentes):
+            client.choose_next_edge(
+                    '{"agent_id":' + str(i) + ', "next_node_id":' + str(allocate[i].get()) + '}')
+            pygame.time.wait(30)
+        ttl = client.time_to_end()
+        print(ttl, client.get_info())
         clock.tick(11)
         client.move()
         # game over:
