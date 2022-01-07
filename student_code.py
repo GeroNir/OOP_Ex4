@@ -259,22 +259,28 @@ while client.is_running() == 'true':
                     #print(e['dest'], e['src'], node)
                     if p['type'] == 1 and node != e['dest']:
                         delta, dest = algo.shortest_path(node, e['dest'])
+                        #dest = dest[1:]
                         print("1", dest)
                     else:
                         delta, dest = algo.shortest_path(node, e['src'])
                         print("-1", dest)
+                        #dest = dest[1:]
                     if delta < min:
                         min = delta
                         index = agent.id
-                    for i in dest:
-                        allocate[index].put(i)
-                    #print(allocate[index].get(), node)
-                    #if count == num_of_agentes:
-                        #client.choose_next_edge('{"agent_id":' + str(index) + ', "next_node_id":' + str(allocate[index].get()) + '}')
-        for i in range(num_of_agentes):
-            client.choose_next_edge(
-                    '{"agent_id":' + str(i) + ', "next_node_id":' + str(allocate[i].get()) + '}')
-            pygame.time.wait(30)
+                    if count == num_of_agentes:
+                        for i in dest:
+                            allocate[index].put(i)
+                            #client.choose_next_edge('{"agent_id":' + str(index) + ', "next_node_id":' + str(allocate[index].get()) + '}')
+                        tmp = allocate[index].get()
+                        if node != tmp:
+                            allocate[index].put(tmp)
+                    for i in range(allocate[agent.id].qsize()):
+                        client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(allocate[agent.id].get(timeout=1000)) + '}')
+        #for i in range(num_of_agentes):
+                    # client.choose_next_edge(
+                    #     '{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(allocate[agent.id].get()) + '}')
+            #pygame.time.wait(150)
         ttl = client.time_to_end()
         print(ttl, client.get_info())
         clock.tick(11)
