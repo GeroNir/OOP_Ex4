@@ -94,6 +94,16 @@ def findEdge(Edges, pos):
             edge = e
     return edge
 
+g = DiGraph()
+path = client.get_info().split(",")
+
+path = path[7][9:-1]
+algo = GraphAlgo.GraphAlgo(g)
+algo.load_from_json(path)
+last_agent = 0
+cen = algo.centerPoint()
+print(cen[0])
+
 
 info = client.get_info().split(',')
 num_of_agentes = info[8]
@@ -104,7 +114,7 @@ allocate = []
 
 for i in range(num_of_agentes):
     q = queue.Queue()
-    tmp = "{\"id\":" + str(i) + "}"
+    tmp = "{\"id\":" + str(cen[0]) + "}"
     client.add_agent(tmp)
     allocate.append(q)
 radius = 15
@@ -194,14 +204,6 @@ while client.is_running() == 'true':
     # refresh rate
     # clock.tick(60)
 
-    g = DiGraph()
-    path = client.get_info().split(",")
-
-    path = path[7][9:-1]
-    # print(path)
-    algo = GraphAlgo.GraphAlgo(g)
-    algo.load_from_json(path)
-    last_agent = 0
 
     agents = json.loads(client.get_agents(),
                         object_hook=lambda d: SimpleNamespace(**d)).Agents
@@ -246,7 +248,9 @@ while client.is_running() == 'true':
             delta = 0
             min = 10000000
             index = -1
+
             for agent in agents:
+                #print("size", allocate[agent.id].qsize())
                 count += 1
                 #print("gets into agents")
                 if agent.dest == -1:
@@ -259,24 +263,27 @@ while client.is_running() == 'true':
                     #print(e['dest'], e['src'], node)
                     if p['type'] == 1 and node != e['dest']:
                         delta, dest = algo.shortest_path(node, e['dest'])
-                        #dest = dest[1:]
-                        print("1", dest)
+                        #print("1", dest)
                     else:
                         delta, dest = algo.shortest_path(node, e['src'])
-                        print("-1", dest)
-                        #dest = dest[1:]
+                        #print("-1", dest)
                     if delta < min:
                         min = delta
                         index = agent.id
                     if count == num_of_agentes:
                         for i in dest:
-                            allocate[index].put(i)
-                            #client.choose_next_edge('{"agent_id":' + str(index) + ', "next_node_id":' + str(allocate[index].get()) + '}')
+                            allocate[index].put_nowait(i)
+                            #pygame.time.wait(3)
+                        allocate[index].put_nowait(e['src'])
+                        allocate[index].put_nowait(e['dest'])
+                        pygame.time.wait(1)
+                        client.choose_next_edge('{"agent_id":' + str(index) + ', "next_node_id":' + str(allocate[index].get()) + '}')
                         tmp = allocate[index].get()
                         if node != tmp:
                             allocate[index].put(tmp)
                     for i in range(allocate[agent.id].qsize()):
                         client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(allocate[agent.id].get(timeout=1000)) + '}')
+                        pygame.time.wait(1)
         #for i in range(num_of_agentes):
                     # client.choose_next_edge(
                     #     '{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(allocate[agent.id].get()) + '}')
