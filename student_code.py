@@ -9,7 +9,9 @@ from types import SimpleNamespace
 from queue import *
 
 import Pokemons
+import button
 from DiGraph import DiGraph
+from button import Button
 from client import Client
 import json
 from pygame import gfxdraw
@@ -211,8 +213,6 @@ while client.is_running() == 'true':
 
     # refresh rate
     # clock.tick(60)
-
-
     agents = json.loads(client.get_agents(),
                         object_hook=lambda d: SimpleNamespace(**d)).Agents
     agents = [agent.Agent for agent in agents]
