@@ -6,12 +6,10 @@ Very simple GUI example for python client to communicates with the server and "p
 import math as ma
 import queue
 from types import SimpleNamespace
-from queue import *
-
+import play
+import Text
 import Pokemons
-import button
 from DiGraph import DiGraph
-from button import Button
 from client import Client
 import json
 from pygame import gfxdraw
@@ -210,6 +208,24 @@ while client.is_running() == 'true':
 
     # update screen changes
     display.update()
+
+    #prints results:
+    json_grade = json.loads(client.get_info())
+    font = pygame.font.SysFont('Comic Sans MS', 30)
+    score = str(json_grade['GameServer']['grade'])
+    print("score", score)
+    text1 = font.render(score, False, (255, 255, 255))
+    screen.blit(text1, (350, 450))
+
+    moves = str(json_grade['GameServer']['moves'])
+    print("moves", moves)
+    text2 = font.render(score, False, (255, 255, 255))
+    screen.blit(text2, (250, 450))
+
+    timeleft = int(client.time_to_end())/1000
+    print("time left", timeleft)
+    text3 = font.render(score, True, (255, 255, 255))
+    screen.blit(text3, (150, 450))
 
     # refresh rate
     # clock.tick(60)
