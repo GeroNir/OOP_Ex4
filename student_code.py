@@ -3,6 +3,7 @@
 OOP - Ex4
 Very simple GUI example for python client to communicates with the server and "play the game!"
 """
+import sys
 import math as ma
 import queue
 from types import SimpleNamespace
@@ -215,17 +216,18 @@ while client.is_running() == 'true':
     score = str(json_grade['GameServer']['grade'])
     print("score", score)
     text1 = font.render(score, False, (255, 255, 255))
-    screen.blit(text1, (350, 450))
+    screen.blit(text1, (WIDTH - 350, HEIGHT - 450))
 
     moves = str(json_grade['GameServer']['moves'])
     print("moves", moves)
     text2 = font.render(score, False, (255, 255, 255))
-    screen.blit(text2, (250, 450))
+    screen.blit(text2, (WIDTH - 250, HEIGHT - 450))
 
     timeleft = int(client.time_to_end())/1000
     print("time left", timeleft)
-    text3 = font.render(score, True, (255, 255, 255))
-    screen.blit(text3, (150, 450))
+    text3 = font.render(score, False, (255, 255, 255))
+    screen.blit(text3, (WIDTH - 150, HEIGHT - 450))
+
 
     # refresh rate
     # clock.tick(60)
