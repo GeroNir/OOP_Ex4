@@ -154,8 +154,10 @@ while client.is_running() == 'true':
             pygame.quit()
             exit(0)
 
-    # refresh surface
-    screen.fill(Color(255, 255, 255))
+    bg = pygame.image.load("graphics/canyon.jpg")
+
+    # INSIDE OF THE GAME LOOP
+    screen.blit(bg, (0, 0))
 
     # draw nodes
     for n in graph['Nodes']:
