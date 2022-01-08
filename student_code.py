@@ -155,9 +155,9 @@ while client.is_running() == 'true':
             exit(0)
 
     bg = pygame.image.load("graphics/canyon.jpg")
-
     # INSIDE OF THE GAME LOOP
     screen.blit(bg, (0, 0))
+
 
     # draw nodes
     for n in graph['Nodes']:
@@ -193,12 +193,18 @@ while client.is_running() == 'true':
 
     # draw agents
     for agent in agents:
-        pygame.draw.circle(screen, Color(255, 0, 0),
-                           (int(agent.pos.x), int(agent.pos.y)), 10)
+        ash = pygame.image.load("graphics/ash.png")
+        screen.blit(ash, ((int(agent.pos.x), int(agent.pos.y))))
+        # pygame.draw.circle(screen, Color(255, 0, 0),
+        #                    (int(agent.pos.x), int(agent.pos.y)), 10)
     # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
+    x = (WIDTH * 0.45)
+    y = (HEIGHT * 0.8)
+    pok = pygame.image.load("graphics/pikachu.png")
     for p in pokemons:
         tmp = Pokemons.Pokemon(p)
-        pygame.draw.circle(screen, Color(0, 255, 255), (int(tmp.x), int(tmp.y)), 10)
+        screen.blit(pok, ((int(tmp.x), int(tmp.y))))
+        # pygame.draw.circle(screen, Color(0, 255, 255), (int(tmp.x), int(tmp.y)), 10)
 
     # update screen changes
     display.update()
