@@ -2,7 +2,10 @@
 **By:**
 *Hagai Hen 313414872* 
 
-*Nir Geron 315874925*  
+*Nir Geron 315874925*
+
+![Pokemon](https://upload.wikimedia.org/wikipedia/commons/9/98/International_Pok%C3%A9mon_logo.svg)
+
  
  This project is used for an implementation of a directed Weighted Graph in python language.
  
