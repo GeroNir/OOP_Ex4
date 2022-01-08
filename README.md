@@ -30,12 +30,16 @@ This time we've been asked to build an algorithm for graphs and make an interfac
 
 # About the Game
 The game consists of 16 stages [0-15].
-At each stage a different number of Pokemon and agents.
-The main goal at each stage is to catch as many Pokemon as possible by the agents. When the game scene actually a strongly weighted (directed) graph.
-Every Pokemon has a "weight". The same "weight" is summed up after the capture of the Pokemon.
-The goal of the game is to accumulate the maximum number of points ("score") in the smallest number of steps and in the shortest time (each game has a fixed time - usually 30-120 seconds).
-At the end of each game we will get the score and the number of steps performed.
 
+At each stage a different number of Pokemon and agents.
+
+The main goal at each stage is to catch as many Pokemon as possible by the agents. When the game scene actually a strongly weighted (directed) graph.
+
+Every Pokemon has a "weight". The same "weight" is summed up after the capture of the Pokemon.
+
+The goal of the game is to accumulate the maximum number of points ("score") in the smallest number of steps and in the shortest time (each game has a fixed time - usually 30-120 seconds).
+
+At the end of each game we will get the score and the number of steps performed.
 
 
 # Algorithm Classes
