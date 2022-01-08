@@ -23,7 +23,7 @@ $git clone https://github.com/GeroNir/OOP_Ex04.git
  ```
  
 # Running Time
-#### [click here to see our Wiki 	:smiley: ](https://github.com/GeroNir/OOP_Ex04/wiki)
+#### [click here to see our Wiki 	:smiley: ](https://github.com/GeroNir/OOP_Ex4/wiki)
 
 # Algorithm Explaining 
 This time we've been asked to build an algorithm for graphs and make an interface that shows the best solution for the "Travelling Salesman Problem", which gave us a list of place that we must visit and returns the quickest way to pass the whole places.
