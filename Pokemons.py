@@ -1,4 +1,5 @@
 class Pokemon():
+
     def __init__(self, pokemon):
         x, y = str(pokemon["pos"]).split(',')
         x = x[12:]

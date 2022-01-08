@@ -1,13 +1,6 @@
-"""
-@author AchiyaZigi
-OOP - Ex4
-Very simple GUI example for python client to communicates with the server and "play the game!"
-"""
-import sys
-import math as ma
 import queue
 from types import SimpleNamespace
-
+import Logic
 import Pokemons
 from DiGraph import DiGraph
 from client import Client
@@ -17,7 +10,6 @@ import pygame
 from pygame import *
 import pygame_widgets
 from pygame_widgets.button import Button
-
 import GraphAlgo
 
 # init pygame
@@ -39,16 +31,12 @@ client.start_connection(HOST, PORT)
 pokemons = client.get_pokemons()
 pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
 
-print(pokemons)
-
 graph_json = client.get_graph()
 
 FONT = pygame.font.SysFont('Arial', 20, bold=True)
 # load the json string into SimpleNamespace Object
 
 graph = json.loads(graph_json)
-
-# print("graph", graph['Nodes'])
 
 for n in graph['Nodes']:
     x, y, _ = str(n['pos']).split(',')
@@ -70,32 +58,11 @@ def scale(data, min_screen, max_screen, min_data, max_data):
 
 
 # decorate scale with the correct values
-
 def my_scale(data, x=False, y=False):
     if x:
         return scale(data, 50, screen.get_width() - 50, min_x, max_x)
     if y:
         return scale(data, 50, screen.get_height() - 50, min_y, max_y)
-
-
-def dist(p1, p2):
-    delta = ma.sqrt(ma.pow(float(p1.x - p2.x), 2) + ma.pow(float(p1.y - p2.y), 2))
-    return delta
-
-
-def findEdge(Edges, pos):
-    x, y, z = str(pos).split(',')
-    pos = SimpleNamespace(x=float(x), y=float(y))
-    min = 10000000000
-    for e in Edges:
-        # print(graph['Nodes'][e['dest']]['pos'])
-        delta1 = dist(graph['Nodes'][e['src']]['pos'], graph['Nodes'][e['dest']]['pos'])
-        delta2 = dist(graph['Nodes'][e['src']]['pos'], pos) + dist(pos, graph['Nodes'][e['dest']]['pos'])
-        delta = ma.fabs(delta1 - delta2)
-        if delta < min:
-            min = delta
-            edge = e
-    return edge
 
 g = DiGraph()
 path = client.get_info().split(",")
@@ -105,36 +72,30 @@ algo = GraphAlgo.GraphAlgo(g)
 algo.load_from_json(path)
 last_agent = 0
 cen = algo.centerPoint()
-print(cen[0])
-
 
 info = client.get_info().split(',')
-num_of_agentes = info[8]
-num_of_agentes = num_of_agentes[9:-2]
-print(num_of_agentes)
-num_of_agentes = int(num_of_agentes)
+num_of_agents = info[8]
+num_of_agents = num_of_agents[9:-2]
+num_of_agents = int(num_of_agents)
 allocate = []
 
-for i in range(num_of_agentes):
+for i in range(num_of_agents):
     q = queue.Queue()
     tmp = "{\"id\":" + str(cen[0]) + "}"
     client.add_agent(tmp)
     allocate.append(q)
 radius = 15
 
+button = Button(
+    screen, 20, 650, 100, 50, text='Exit',
+    fontSize=50, margin=20,
+    pressedColour=(0, 255, 0), radius=20,
+    onClick=lambda: exit(0)
+)
 
-
-# client.add_agent("{\"id\":1}")
-# client.add_agent("{\"id\":2}")
-# client.add_agent("{\"id\":3}")
-
-# this commnad starts the server - the game is running now
+# this command starts the server - the game is running now
 client.start()
 
-"""
-The code below should be improved significantly:
-The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
-"""
 
 while client.is_running() == 'true':
     pokemons = json.loads(client.get_pokemons())
@@ -146,11 +107,12 @@ while client.is_running() == 'true':
     agents = json.loads(client.get_agents(),
                         object_hook=lambda d: SimpleNamespace(**d)).Agents
     agents = [agent.Agent for agent in agents]
-    # print(agents)
+
     for a in agents:
         x, y, _ = a.pos.split(',')
         a.pos = SimpleNamespace(x=my_scale(
             float(x), x=True), y=my_scale(float(y), y=True))
+
     # check events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -160,7 +122,6 @@ while client.is_running() == 'true':
     bg = pygame.image.load("graphics/canyon.jpg")
     # INSIDE OF THE GAME LOOP
     screen.blit(bg, (0, 0))
-
 
     # draw nodes
     for n in graph['Nodes']:
@@ -198,186 +159,43 @@ while client.is_running() == 'true':
     for agent in agents:
         ash = pygame.image.load("graphics/ash.png")
         screen.blit(ash, ((int(agent.pos.x), int(agent.pos.y))))
-        # pygame.draw.circle(screen, Color(255, 0, 0),
-        #                    (int(agent.pos.x), int(agent.pos.y)), 10)
-    # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
+
     x = (WIDTH * 0.45)
     y = (HEIGHT * 0.8)
     pok = pygame.image.load("graphics/pikachu.png")
     for p in pokemons:
         tmp = Pokemons.Pokemon(p)
         screen.blit(pok, ((int(tmp.x), int(tmp.y))))
-        # pygame.draw.circle(screen, Color(0, 255, 255), (int(tmp.x), int(tmp.y)), 10)
 
     # update screen changes
     display.update()
 
-    #prints results:
+    # prints results:
     json_grade = json.loads(client.get_info())
     font = pygame.font.SysFont('Comic Sans MS', 30)
-    score = str(json_grade['GameServer']['grade'])
+    score = "SCORE: " + str(json_grade['GameServer']['grade'])
     print("score", score)
-    text1 = font.render(score, False, (255, 255, 255))
-    screen.blit(text1, (50, 20))
+    text1 = font.render(score, False, (0, 0, 255))
+    screen.blit(text1, (220, 20))
 
-    moves = str(json_grade['GameServer']['moves'])
+    moves = "MOVES: " + str(json_grade['GameServer']['moves'])
     print("moves", moves)
-    text2 = font.render(moves, False, (255, 255, 255))
-    screen.blit(text2, (100, 20))
+    text2 = font.render(moves, False, (0, 255, 0))
+    screen.blit(text2, (400, 20))
 
-    timeleft = int(client.time_to_end())/1000
+    timeleft = float(client.time_to_end()) / 1000
+    timeleft = "TIME LEFT: " + str(timeleft)
     print("time left", timeleft)
-    text3 = font.render(moves, False, (255, 255, 255))
-    screen.blit(text3, (150, 20))
+    text3 = font.render(timeleft, False, (0, 0, 0))
+    screen.blit(text3, (20, 120))
 
-    button = Button(
-        screen, 20, 650, 100, 50, text='Exit',
-        fontSize=50, margin=20,
-        pressedColour=(0, 255, 0), radius=20,
-        onClick=lambda: print('Click')
-    )
     events = pygame.event.get()
     if event.type == pygame.QUIT:
         pygame.quit()
         run = False
         quit()
-    # Now
-    pygame_widgets.update(events)
 
-    # # Instead of
-    # button.listen(events)
-    # button.draw()
-    #
+    pygame_widgets.update(events)
     pygame.display.update()
 
-    # refresh rate
-    # clock.tick(60)
-    agents = json.loads(client.get_agents(),
-                        object_hook=lambda d: SimpleNamespace(**d)).Agents
-    agents = [agent.Agent for agent in agents]
-
-    pokemons = json.loads(client.get_pokemons())
-    pokemons = [p["Pokemon"] for p in pokemons["Pokemons"]]
-    list_edegs = []
-
-    for p in pokemons:
-        e = findEdge(graph['Edges'], p['pos'])
-        if p['type'] == 1:
-            list_edegs.append(e['dest'])
-        else:
-            list_edegs.append(e['src'])
-    # choose next edge
-    if len(agents) == 1:
-        for agent in agents:
-            # find where the agent
-            for n in graph['Nodes']:
-                x, y, z = str(agent.pos).split(',')
-                if float(n['pos'].x) == float(x) and float(n['pos'].y) == float(y):
-                    node = n['id']
-            if agent.dest == -1:
-                last_agent = agent.id
-                for p in pokemons:
-                    e = findEdge(graph['Edges'], p['pos'])
-                    if not node == e['src']:
-                        dest = algo.shortest_path(node, e['src'])[1]
-                    else:
-                        dest = algo.shortest_path(node, e['dest'])[1]
-                client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(dest[1]) + '}')
-                ttl = client.time_to_end()
-                print(ttl, client.get_info())
-        clock.tick(11)
-        client.move()
-    else:
-        for p in pokemons:
-            count = 0
-            dest = 0
-            e = findEdge(graph['Edges'], p['pos'])
-            delta = 0
-            min = 10000000
-            index = -1
-
-            for agent in agents:
-                #print("size", allocate[agent.id].qsize())
-                count += 1
-                #print("gets into agents")
-                if agent.dest == -1:
-                    # find where the agent
-                    for n in graph['Nodes']:
-                        #print("gets into graph['Nodes']")
-                        x, y, z = str(agent.pos).split(',')
-                        if float(n['pos'].x) == float(x) and float(n['pos'].y) == float(y):
-                            node = n['id']
-                    #print(e['dest'], e['src'], node)
-                    if p['type'] == 1 and node != e['dest']:
-                        delta, dest = algo.shortest_path(node, e['dest'])
-                        #print("1", dest)
-                    else:
-                        delta, dest = algo.shortest_path(node, e['src'])
-                        #print("-1", dest)
-                    if delta < min:
-                        min = delta
-                        index = agent.id
-                    if count == num_of_agentes:
-                        for i in dest:
-                            allocate[index].put_nowait(i)
-                            #pygame.time.wait(3)
-                        allocate[index].put_nowait(e['src'])
-                        allocate[index].put_nowait(e['dest'])
-                        pygame.time.wait(1)
-                        client.choose_next_edge('{"agent_id":' + str(index) + ', "next_node_id":' + str(allocate[index].get()) + '}')
-                        tmp = allocate[index].get()
-                        if node != tmp:
-                            allocate[index].put(tmp)
-                    for i in range(allocate[agent.id].qsize()):
-                        client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(allocate[agent.id].get(timeout=1000)) + '}')
-                        pygame.time.wait(1)
-        #for i in range(num_of_agentes):
-                    # client.choose_next_edge(
-                    #     '{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(allocate[agent.id].get()) + '}')
-            #pygame.time.wait(150)
-        ttl = client.time_to_end()
-        print(ttl, client.get_info())
-        clock.tick(11)
-        client.move()
-        # game over:
-
-        # if p['type'] == 1:
-        #     next_node = e['src']
-        # else:
-        #     next_node = e['dest']
-        # print(node, next_node)
-        # if len(pokemons) > 1:
-        #     print(list_edegs)
-        #     node_list = algo.TSP(list_edegs)
-        #     print(node_list)
-        #     if not int(node) == int(node_list[0]):
-        #         dest = algo.shortest_path(node, node_list[0])[1]
-        #     else:
-        #         print(node_list)
-        #         node_list.remove(node_list[0])
-        #         print(node_list)
-        #         dest = algo.shortest_path(node, node_list[0])[1]
-        #         print(dest)
-        # else:
-
-# game over:
-
-
-# if p['type'] == 1:
-#     next_node = e['src']
-# else:
-#     next_node = e['dest']
-# print(node, next_node)
-# if len(pokemons) > 1:
-#     print(list_edegs)
-#     node_list = algo.TSP(list_edegs)
-#     print(node_list)
-#     if not int(node) == int(node_list[0]):
-#         dest = algo.shortest_path(node, node_list[0])[1]
-#     else:
-#         print(node_list)
-#         node_list.remove(node_list[0])
-#         print(node_list)
-#         dest = algo.shortest_path(node, node_list[0])[1]
-#         print(dest)
-# else:
+    Logic.start(client, graph)
