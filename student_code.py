@@ -7,6 +7,7 @@ import sys
 import math as ma
 import queue
 from types import SimpleNamespace
+
 import Pokemons
 from DiGraph import DiGraph
 from client import Client
@@ -14,6 +15,9 @@ import json
 from pygame import gfxdraw
 import pygame
 from pygame import *
+import pygame_widgets
+from pygame_widgets.button import Button
+
 import GraphAlgo
 
 # init pygame
@@ -226,6 +230,25 @@ while client.is_running() == 'true':
     text3 = font.render(score, False, (255, 255, 255))
     screen.blit(text3, (WIDTH - 150, HEIGHT - 450))
 
+    button = Button(
+        screen, 20, 650, 100, 50, text='Exit',
+        fontSize=50, margin=20,
+        pressedColour=(0, 255, 0), radius=20,
+        onClick=lambda: print('Click')
+    )
+    events = pygame.event.get()
+    if event.type == pygame.QUIT:
+        pygame.quit()
+        run = False
+        quit()
+    # Now
+    pygame_widgets.update(events)
+
+    # # Instead of
+    # button.listen(events)
+    # button.draw()
+    #
+    pygame.display.update()
 
     # refresh rate
     # clock.tick(60)
