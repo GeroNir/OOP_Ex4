@@ -7,8 +7,6 @@ import sys
 import math as ma
 import queue
 from types import SimpleNamespace
-import play
-import Text
 import Pokemons
 from DiGraph import DiGraph
 from client import Client
