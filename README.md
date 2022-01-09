@@ -106,5 +106,5 @@ And we have another function calls "connect" that make an edge between two nodes
 
 # UML diagram
 
- ![Alt text](https://github.com/GeroNir/OOP_Ex04/blob/master/data/pics/UML.png?raw=true)
+ ![Alt text](https://github.com/GeroNir/OOP_Ex4/blob/master/data/graphics/UML.png?raw=true)
  
