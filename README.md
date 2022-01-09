@@ -44,6 +44,8 @@ The goal of the game is to accumulate the maximum number of points ("score") in 
 
 At the end of each game we will get the score and the number of steps performed.
 
+![Pokemon](https://github.com/GeroNir/OOP_Ex4/blob/master/graphics/screenshot.png)
+
 
 # Algorithm Classes
 **GraphAlgo :**
